@@ -33,6 +33,10 @@ type Order = {
 export default function AdminPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [recoveryToken, setRecoveryToken] = useState("");
+  const [forgotMode, setForgotMode] = useState(false);
   const [token, setToken] = useState("");
   const [userId, setUserId] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
@@ -47,6 +51,17 @@ export default function AdminPage() {
   const [newOrderAlerts, setNewOrderAlerts] = useState<Order[]>([]);
   const seenOrderIds = useRef<Set<string>>(new Set());
   const initializedOrderWatch = useRef(false);
+
+  useEffect(() => {
+    // Supabase sends browser-only recovery tokens in the URL fragment.
+    const fragment = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    if (fragment.get("type") === "recovery" && fragment.get("access_token")) {
+      setRecoveryToken(fragment.get("access_token") || "");
+      setForgotMode(false);
+      setNotice("Tautan pemulihan terverifikasi. Buat password baru untuk akun admin.");
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined" || !("Notification" in window)) {
@@ -132,6 +147,66 @@ export default function AdminPage() {
       window.clearInterval(intervalId);
     };
   }, [token]);
+
+  async function requestPasswordReset(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    setNotice("");
+    try {
+      if (!supabaseUrl || !supabaseKey) throw new Error("Konfigurasi Supabase belum tersedia saat build situs.");
+      const redirectTo = window.location.origin + "/upprime/admin/";
+      const response = await fetch(supabaseUrl + "/auth/v1/recover?redirect_to=" + encodeURIComponent(redirectTo), {
+        method: "POST",
+        headers: { apikey: supabaseKey, "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim().toLowerCase() })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.msg || data.message || "Tidak dapat mengirim email pemulihan.");
+      setNotice("Jika email terdaftar, tautan pemulihan telah dikirim. Buka email tersebut di perangkat ini, lalu ikuti tautannya untuk membuat password baru.");
+      setForgotMode(false);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Gagal meminta reset password.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function updateRecoveredPassword(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setNotice("");
+    if (!recoveryToken) {
+      setNotice("Tautan pemulihan tidak ditemukan. Minta tautan reset password yang baru.");
+      return;
+    }
+    if (newPassword.length < 8) {
+      setNotice("Password baru minimal 8 karakter.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setNotice("Konfirmasi password tidak sama.");
+      return;
+    }
+    setBusy(true);
+    try {
+      if (!supabaseUrl || !supabaseKey) throw new Error("Konfigurasi Supabase belum tersedia saat build situs.");
+      const response = await fetch(supabaseUrl + "/auth/v1/user", {
+        method: "PUT",
+        headers: { apikey: supabaseKey, Authorization: "Bearer " + recoveryToken, "Content-Type": "application/json" },
+        body: JSON.stringify({ password: newPassword })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.msg || data.message || data.error_description || "Password gagal diperbarui. Minta tautan reset yang baru.");
+      setRecoveryToken("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setPassword("");
+      setNotice("Password admin berhasil diperbarui. Silakan masuk menggunakan password baru.");
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Gagal memperbarui password.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function signIn(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -395,14 +470,36 @@ export default function AdminPage() {
         <Link href="/" style={{ color: "#5c5de8", fontWeight: 700 }}>← Kembali ke toko</Link>
       </header>
 
-      {!token ? <form onSubmit={signIn} style={{ background: "white", padding: 24, borderRadius: 18, border: "1px solid #e8eaf1", maxWidth: 480 }}>
-        <h2 style={{ marginTop: 0 }}>Login admin</h2>
-        <p style={{ color: "#687087", lineHeight: 1.6 }}>Masuk memakai akun admin UPPRIME yang sama dengan di laptop. Akun baru tidak bisa menjadi admin melalui halaman ini.</p>
-        {!configured && <p style={{ background: "#fff4db", padding: 12, borderRadius: 10 }}>Supabase belum dikonfigurasi pada frontend. Panel tidak akan tersambung sampai URL proyek dan anon key publik ditambahkan sebagai environment variables saat build.</p>}
-        <label style={{ display: "block", fontWeight: 700, marginTop: 14 }}>Email<input required type="email" inputMode="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} autoComplete="username" value={email} onChange={e => setEmail(e.target.value)} style={inputStyle} /></label>{email.trim().toLowerCase().endsWith("@gmai.com") && <p role="status" style={{ color: "#b45309", background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 9, padding: 10, fontSize: 12, lineHeight: 1.5 }}>Periksa ejaan email: alamat ini berakhiran @gmai.com. Jika memakai Gmail biasa, domainnya biasanya @gmail.com.</p>}
-        <label style={{ display: "block", fontWeight: 700, marginTop: 14 }}>Password<input required type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} style={inputStyle} /></label>
-        <button disabled={busy || !configured} style={buttonStyle}>{busy ? "Memproses…" : "Login admin"}</button>
-      </form> : <>
+      {!token ? <section style={{ background: "white", padding: 24, borderRadius: 18, border: "1px solid #e8eaf1", maxWidth: 480 }}>
+        {recoveryToken ? <>
+          <h2 style={{ marginTop: 0 }}>Buat password baru</h2>
+          <p style={{ color: "#687087", lineHeight: 1.6 }}>Masukkan password baru untuk akun admin UPPRIME.</p>
+          <form onSubmit={updateRecoveredPassword}>
+            <label style={{ display: "block", fontWeight: 700, marginTop: 14 }}>Password baru<input required minLength={8} type="password" autoComplete="new-password" value={newPassword} onChange={e => setNewPassword(e.target.value)} style={inputStyle} /></label>
+            <label style={{ display: "block", fontWeight: 700, marginTop: 14 }}>Ulangi password baru<input required minLength={8} type="password" autoComplete="new-password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} style={inputStyle} /></label>
+            <button disabled={busy || !configured} style={buttonStyle}>{busy ? "Menyimpan…" : "Simpan password baru"}</button>
+          </form>
+        </> : forgotMode ? <>
+          <h2 style={{ marginTop: 0 }}>Lupa password admin?</h2>
+          <p style={{ color: "#687087", lineHeight: 1.6 }}>Masukkan email akun admin. Tautan pemulihan akan kembali ke halaman admin UPPRIME ini.</p>
+          <form onSubmit={requestPasswordReset}>
+            <label style={{ display: "block", fontWeight: 700, marginTop: 14 }}>Email admin<input required type="email" inputMode="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} autoComplete="username" value={email} onChange={e => setEmail(e.target.value)} style={inputStyle} /></label>
+            <button disabled={busy || !configured} style={buttonStyle}>{busy ? "Mengirim…" : "Kirim tautan reset"}</button>
+            <button type="button" onClick={() => { setForgotMode(false); setNotice(""); }} style={{ ...secondaryButtonStyle, marginTop: 10 }}>Kembali ke login</button>
+          </form>
+        </> : <>
+          <h2 style={{ marginTop: 0 }}>Login admin</h2>
+          <p style={{ color: "#687087", lineHeight: 1.6 }}>Masuk memakai akun admin UPPRIME yang sama dengan di laptop. Akun baru tidak bisa menjadi admin melalui halaman ini.</p>
+          {!configured && <p style={{ background: "#fff4db", padding: 12, borderRadius: 10 }}>Supabase belum dikonfigurasi pada frontend. Panel tidak akan tersambung sampai URL proyek dan anon key publik ditambahkan sebagai environment variables saat build.</p>}
+          <form onSubmit={signIn}>
+            <label style={{ display: "block", fontWeight: 700, marginTop: 14 }}>Email<input required type="email" inputMode="email" autoCapitalize="none" autoCorrect="off" spellCheck={false} autoComplete="username" value={email} onChange={e => setEmail(e.target.value)} style={inputStyle} /></label>{email.trim().toLowerCase().endsWith("@gmai.com") && <p role="status" style={{ color: "#b45309", background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 9, padding: 10, fontSize: 12, lineHeight: 1.5 }}>Periksa ejaan email: alamat ini berakhiran @gmai.com. Jika memakai Gmail biasa, domainnya biasanya @gmail.com.</p>}
+            <label style={{ display: "block", fontWeight: 700, marginTop: 14 }}>Password<input required type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} style={inputStyle} /></label>
+            <button disabled={busy || !configured} style={buttonStyle}>{busy ? "Memproses…" : "Login admin"}</button>
+          </form>
+          <button type="button" onClick={() => { setForgotMode(true); setNotice(""); }} style={{ ...secondaryButtonStyle, marginTop: 10 }}>Lupa password?</button>
+        </>}
+        {notice && <p role="status" aria-live="polite" style={{ marginTop: 14, lineHeight: 1.6 }}>{notice}</p>}
+      </section> : <>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 20 }}>
           <div><span style={{ color: "#687087", fontSize: 13, display: "block" }}>Sesi aktif · {userId}</span><small style={{ color: "#687087" }}>Pemeriksaan pesanan otomatis setiap 12 detik saat panel ini terbuka.</small></div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}><button type="button" disabled={notificationPermission === "unsupported"} onClick={enableOrderNotifications} style={notificationPermission === "granted" ? enabledButtonStyle : secondaryButtonStyle}>{notificationPermission === "granted" ? "✓ Notifikasi aktif" : notificationPermission === "denied" ? "Izin notifikasi diblokir" : notificationPermission === "unsupported" ? "Browser tanpa notifikasi" : "Aktifkan notifikasi"}</button><button onClick={signOut} style={secondaryButtonStyle}>Keluar</button></div>
