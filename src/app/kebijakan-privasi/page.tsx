@@ -1,7 +1,7 @@
 export const metadata = { title: "Kebijakan Privasi — UPPRIME" };
 
 export default function PrivacyPage() {
-  return <main className="primehub-app legal-shell">
+  return <main className="upprime-app legal-shell">
     <header className="site-header"><div className="container nav"><a className="legal-brand" href="/upprime/">UPPRIME</a><a className="button button-secondary button-small" href="/upprime/">Kembali ke toko</a></div></header>
     <article className="legal-document container">
       <h1>Kebijakan Privasi</h1>
