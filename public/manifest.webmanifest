@@ -1,0 +1,29 @@
+{
+  "id": "/upprime/",
+  "name": "UPPRIME — Premium Services. Better Life.",
+  "short_name": "UPPRIME",
+  "description": "Layanan dan langganan digital premium dengan pengalaman pemesanan yang mudah.",
+  "lang": "id-ID",
+  "start_url": "/upprime/",
+  "scope": "/upprime/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
+  "background_color": "#080807",
+  "theme_color": "#080807",
+  "categories": ["shopping", "lifestyle"],
+  "icons": [
+    {
+      "src": "/upprime/favicon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/upprime/favicon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
