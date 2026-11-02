@@ -1,47 +1,46 @@
-# PrimeHub
+# UPPRIME
 
 **Premium Services. Better Life.**
 
-PrimeHub adalah website katalog layanan digital premium yang dirancang untuk memudahkan pengunjung menemukan layanan, memfilter kategori, dan mengirim permintaan informasi.
-
-## Teknologi
-
-- Next.js App Router
-- React + TypeScript
-- CSS responsif
-- Lucide icons
+UPPRIME adalah toko layanan dan langganan digital premium. Website menggunakan Next.js App Router, React, TypeScript, Supabase, dan GitHub Pages.
 
 ## Menjalankan secara lokal
 
-Pastikan Node.js versi LTS terpasang.
+Pastikan Node.js 22 atau versi LTS yang kompatibel telah terpasang.
 
 ```bash
 npm install
 npm run dev
 ```
 
-Buka http://localhost:3000.
-
-Untuk memeriksa build produksi:
+Buka http://localhost:3000. Untuk memeriksa build statis:
 
 ```bash
 npm run build
-npm start
 ```
 
-## Struktur utama
+## Komponen utama
 
-- `src/app/page.tsx` — halaman beranda, katalog, filter pencarian, dan formulir ringkasan permintaan.
+- `src/app/page.tsx` — katalog, detail produk, dan pemesanan.
+- `src/app/admin/page.tsx` — login dan panel admin.
 - `src/app/globals.css` — desain responsif.
-- `src/app/layout.tsx` — metadata dan konfigurasi favicon.
-- `public/` — logo dan aset favicon PrimeHub.
+- `supabase/functions/` — Edge Functions untuk pembuatan pesanan dan pembayaran.
+- `supabase/SETUP.md` — konfigurasi backend, pembayaran, dan notifikasi.
 
-## Sebelum diluncurkan
+## Konfigurasi deployment
 
-- Ganti data contoh katalog dan isi harga berdasarkan layanan yang benar-benar tersedia.
-- Tambahkan kontak resmi, kebijakan privasi, syarat layanan, dan informasi dukungan.
-- Hubungkan formulir permintaan ke backend atau kanal kontak yang terverifikasi.
-- Integrasikan pembayaran hanya setelah penyedia, harga, dan alur pemesanan sudah dikonfirmasi.
-- Pastikan setiap langganan diaktifkan sesuai ketentuan resmi penyedia layanan.
+Workflow GitHub Actions membangun situs statis untuk GitHub Pages di `/upprime/`. Variabel frontend yang boleh dipublikasikan hanya URL Supabase dan publishable/anon key. Jangan pernah memasukkan service-role key atau Midtrans Server Key ke frontend, GitHub source, maupun variabel `NEXT_PUBLIC_*`.
 
-Mode saat ini bergantung pada konfigurasi deployment. Tanpa konfigurasi Supabase publik, katalog menampilkan data contoh dan formulir hanya menghasilkan ringkasan lokal. Setelah `NEXT_PUBLIC_SUPABASE_URL` dan salah satu `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` dikonfigurasi serta skema dan Edge Function Supabase diterapkan, katalog membaca produk aktif dan formulir dapat membuat pesanan berstatus menunggu verifikasi. Integrasi ini belum berarti pembayaran DANA otomatis tersedia; status lunas tidak boleh dipilih sebelum transfer diverifikasi. Lihat `supabase/SETUP.md`.
+Jika Supabase tidak terhubung atau katalog gagal dimuat, website tidak akan menampilkan produk demo atau membuat pesanan palsu.
+
+## Status pembayaran
+
+Integrasi Midtrans Snap dan webhook sudah tersedia di source dan Edge Functions. Pembayaran otomatis baru aktif setelah akun merchant, Server Key, mode Sandbox/Production, dan Payment Notification URL dikonfigurasi serta diuji. Aktivasi produk tetap dilakukan manual oleh admin setelah status pembayaran diverifikasi.
+
+## Sebelum menerima pelanggan
+
+- Pastikan seluruh produk, harga, stok, foto, dan metode aktivasi benar serta diperoleh secara sah.
+- Lengkapi konfigurasi Midtrans dan uji alur pembayaran Sandbox.
+- Uji login kedua admin, pemesanan, webhook, pembatalan, refund, dan aktivasi.
+- Tinjau kebijakan privasi, syarat layanan, serta kanal dukungan pelanggan.
+- Jalankan pemeriksaan keamanan Supabase secara berkala.
