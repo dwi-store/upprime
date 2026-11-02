@@ -1,9 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Repository is published at https://dwi-store.github.io/upprime/
+  // Deploy at the Vercel project root (https://upprime.vercel.app/)
   output: "export",
-  basePath: "/upprime",
   trailingSlash: true,
   images: {
     unoptimized: true
