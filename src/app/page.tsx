@@ -43,42 +43,6 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.
 const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }) : null;
 const money = (value: number) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(value);
 
-const fallbackCatalogServices: Service[] = [
-  {
-    id: "demo-canva-premium",
-    name: "Canva Premium",
-    app: "Canva Premium",
-    category: "Desain & Kreativitas",
-    description: "Paket Canva Premium untuk 1 bulan. Harga awal sementara; pastikan jenis lisensi dan metode aktivasi yang sah sebelum memproses pesanan.",
-    price: money(15000),
-    price_idr: 15000,
-    duration: "Stok tersedia",
-    icon: "🎨",
-    methodLabel: "Informasi paket",
-    eta: "Mengikuti konfirmasi admin",
-    tone: "pink",
-    featured: true,
-    stock: 10,
-    image_url: "/upprime/products/canva-premium.svg"
-  },
-  {
-    id: "demo-capcut-premium",
-    name: "CapCut Premium",
-    app: "CapCut Premium",
-    category: "Video & Editing",
-    description: "Paket CapCut Premium untuk 1 bulan. Harga awal sementara; pastikan jenis lisensi dan metode aktivasi yang sah sebelum memproses pesanan.",
-    price: money(25000),
-    price_idr: 25000,
-    duration: "Stok tersedia",
-    icon: "🎬",
-    methodLabel: "Informasi paket",
-    eta: "Mengikuti konfirmasi admin",
-    tone: "green",
-    stock: 10,
-    image_url: "/upprime/products/capcut-premium.svg"
-  }
-];
-
 type ThemeMode = "light" | "dark" | "system";
 
 export default function HomePage() {
@@ -124,7 +88,7 @@ export default function HomePage() {
   const [requestError, setRequestError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [createdOrder, setCreatedOrder] = useState<{ order_code: string; total_idr: number; checkout_url?: string; payment_notice?: string } | null>(null);
-  const [catalogServices, setCatalogServices] = useState<Service[]>(supabase ? [] : fallbackCatalogServices);
+  const [catalogServices, setCatalogServices] = useState<Service[]>([]);
   const [catalogStatus, setCatalogStatus] = useState<"unconfigured" | "loading" | "live" | "error">(supabase ? "loading" : "unconfigured");
 
   useEffect(() => {
@@ -174,7 +138,7 @@ export default function HomePage() {
         }
       } catch {
         if (!cancelled && !hasLoadedSuccessfully) {
-          setCatalogServices((current) => current.length > 0 ? current : fallbackCatalogServices);
+          setCatalogServices([]);
           setCatalogStatus("error");
         }
       } finally {
@@ -186,7 +150,7 @@ export default function HomePage() {
     // Fetch on open, then keep an already-open shop synchronized with admin edits.
     void loadCatalog();
     const channel = client!
-      .channel("primehub-storefront-products")
+      .channel("upprime-storefront-products")
       .on("postgres_changes", { event: "*", schema: "public", table: "products" }, () => {
         void loadCatalog();
       })
@@ -283,17 +247,8 @@ export default function HomePage() {
         setSubmitted(true);
         return;
       }
-      setRequestSummary([
-        "UPPRIME — ringkasan permintaan demo",
-        "Layanan: " + selectedService.name,
-        "Harga contoh: " + selectedService.price,
-        "Nama: " + customerName,
-        "Kontak: " + customerContact,
-        customerNote ? "Catatan: " + customerNote : "",
-        "",
-        "Ini hanya demo lokal. Belum ada transaksi atau aktivasi nyata."
-      ].filter(Boolean).join("\n"));
-      setSubmitted(true);
+      throw new Error("Pemesanan belum tersedia karena katalog atau backend belum terhubung. Silakan coba lagi nanti.");
+
     } catch (error) {
       setRequestError(error instanceof Error ? error.message : "Permintaan gagal diproses.");
     } finally {
@@ -302,11 +257,11 @@ export default function HomePage() {
   }
 
   return (
-    <main className="primehub-app">
+    <main className="upprime-app">
       <header className="site-header">
         <div className="container nav">
           <a className="brand" href="#home" aria-label="UPPRIME beranda">
-            <Image src="/upprime/primehub-logo.svg" alt="UPPRIME — Premium Services. Better Life." width={181} height={50} priority />
+            <Image src="/upprime/upprime-header-logo.webp" alt="UPPRIME — Premium Services. Better Life." width={181} height={50} priority />
           </a>
           <nav className="nav-links" aria-label="Navigasi utama">
             <a href="#home">Beranda</a><a href="#layanan">Katalog Premium</a><a href="#cara-pesan">Cara Pesan</a><a href="#bantuan">Bantuan</a><a href="/upprime/syarat-ketentuan/">Syarat Layanan</a><a href="/upprime/pengembalian-dana/">Garansi & Refund</a>
