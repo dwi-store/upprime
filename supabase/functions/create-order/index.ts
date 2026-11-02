@@ -137,7 +137,7 @@ async function notifyAdminOnTelegram(order: OrderNotification): Promise<"sent" |
   }
 
   const message = [
-    "🔔 Pesanan baru PrimeHub",
+    "🔔 Pesanan baru UPPRIME",
     "Kode: " + compactText(order.orderCode),
     "Pelanggan: " + compactText(order.customerName),
     "Kontak: " + compactText(order.customerContact),
