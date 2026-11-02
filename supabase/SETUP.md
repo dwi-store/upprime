@@ -1,7 +1,7 @@
-# PrimeHub Supabase setup
+# UPPRIME Supabase setup
 
 ## Live project status (22 October 2026)
-The connected `primehub` project in Singapore has the four core tables (`profiles`, `products`, `orders`, `order_items`) with Row Level Security enabled. The profile bootstrap, stock-on-cancellation, and checkout security/rate-limit migrations have been applied directly to the linked database. The `create-order` Edge Function is deployed and active.
+The connected `UPPRIME` project in Singapore has the four core tables (`profiles`, `products`, `orders`, `order_items`) with Row Level Security enabled. The profile bootstrap, stock-on-cancellation, and checkout security/rate-limit migrations have been applied directly to the linked database. The `create-order` Edge Function is deployed and active.
 
 The project has the active Canva Premium and CapCut Premium catalog entries. Admin login requires an owner account in Supabase Auth with its admin role assigned; order activity is stored in the `orders` table. Automatic DANA verification is not integrated; new orders remain pending until an authorized admin verifies payment.
 
@@ -51,7 +51,7 @@ This integration uses Meta's WhatsApp Business Cloud API and an approved message
 
 Suggested template body:
 ```text
-Pesanan baru PrimeHub!
+Pesanan baru UPPRIME!
 Kode: {{1}}
 Pelanggan: {{2}}
 Kontak: {{3}}
