@@ -44,3 +44,16 @@ Integrasi Midtrans Snap dan webhook sudah tersedia di source dan Edge Functions.
 - Uji login kedua admin, pemesanan, webhook, pembatalan, refund, dan aktivasi.
 - Tinjau kebijakan privasi, syarat layanan, serta kanal dukungan pelanggan.
 - Jalankan pemeriksaan keamanan Supabase secara berkala.
+
+## PWA dan fondasi aplikasi
+
+UPPRIME disiapkan sebagai Progressive Web App (PWA) pada jalur `/upprime/`:
+
+- `public/manifest.webmanifest` mendefinisikan nama aplikasi, ikon, warna, dan mode standalone.
+- `public/sw.js` mendaftarkan service worker untuk aset statis dan halaman offline.
+- `src/app/pwa-register.tsx` mendaftarkan service worker di browser.
+- `public/offline.html` memberi pesan saat perangkat tidak memiliki koneksi.
+
+PWA menggunakan backend Supabase yang sama dengan website. Tidak diperlukan database atau akun pelanggan terpisah untuk versi PWA. Jangan mengandalkan mode offline untuk login, katalog terbaru, checkout, pembayaran, status pesanan, atau panel admin; semua proses tersebut tetap memerlukan koneksi dan validasi server. Service worker sengaja tidak menyimpan halaman navigasi, data pengguna, permintaan API, autentikasi, maupun pembayaran.
+
+Untuk pengembangan aplikasi selanjutnya, pertahankan kontrak data dan operasi server di Supabase Edge Functions/RLS. Klien baru harus menggunakan publishable key dan kebijakan RLS yang sama; secret key tetap hanya di server.
