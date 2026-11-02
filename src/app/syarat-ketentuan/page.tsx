@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function TermsPage() {
   return (
-    <main className="primehub-app legal-shell">
+    <main className="upprime-app legal-shell">
       <header className="site-header"><div className="container nav"><a className="legal-brand" href="/upprime/">UPPRIME</a><a className="button button-secondary button-small" href="/upprime/">Kembali ke toko</a></div></header>
       <article className="legal-document container">
         <span className="eyebrow">INFORMASI PELANGGAN</span>
