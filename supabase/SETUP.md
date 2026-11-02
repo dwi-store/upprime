@@ -43,7 +43,7 @@ Never commit or send the bot token in chat, and do not put it in frontend code o
 ## WhatsApp order notifications (optional)
 The `create-order` Edge Function can send a WhatsApp alert to the store admin after a successful order. The order is still created if WhatsApp is not configured or the provider is temporarily unavailable.
 
-This integration uses Meta's WhatsApp Business Cloud API and an approved message template. In Meta's WhatsApp Manager, create/approve a template named `primehub_order_alert` in Indonesian (`id`) with these four body parameters in this exact order:
+This integration uses Meta's WhatsApp Business Cloud API and an approved message template. The legacy template identifier is retained for backward compatibility; it is not shown to customers. If you create a new UPPRIME-named template, set `WHATSAPP_ORDER_TEMPLATE` to that approved name in Supabase Secrets. In Meta's WhatsApp Manager, create/approve a template named `primehub_order_alert` in Indonesian (`id`) with these four body parameters in this exact order:
 1. `{{1}}` — order code
 2. `{{2}}` — customer name
 3. `{{3}}` — customer contact
