@@ -1,6 +1,6 @@
-# PrimeHub Supabase backend
+# UPPRIME Supabase backend
 
-This directory contains the database, admin, and checkout backend source used by PrimeHub's static storefront.
+This directory contains the database, admin, and checkout backend source used by UPPRIME's static storefront.
 
 ## Live project status (22 October 2026)
 
