@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import PwaRegister from "./pwa-register";
 
 export const metadata: Metadata = {
   title: "UPPRIME — Premium Services. Better Life.",
   description:
     "Temukan layanan dan langganan digital premium favoritmu dengan pengalaman pemesanan yang mudah di UPPRIME.",
   applicationName: "UPPRIME",
+  manifest: "/upprime/manifest.webmanifest",
   icons: {
     icon: [
       { url: "/upprime/favicon.svg", type: "image/svg+xml" },
@@ -25,7 +27,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="id">
-      <body>{children}</body>
+      <body><PwaRegister />{children}</body>
     </html>
   );
 }
