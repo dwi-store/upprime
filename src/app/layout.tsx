@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   description:
     "Temukan layanan dan langganan digital premium favoritmu dengan pengalaman pemesanan yang mudah di UPPRIME.",
   applicationName: "UPPRIME",
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "UPPRIME" },
   manifest: "/upprime/manifest.webmanifest",
   icons: {
     icon: [
