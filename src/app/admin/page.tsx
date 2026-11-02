@@ -53,13 +53,29 @@ export default function AdminPage() {
   const initializedOrderWatch = useRef(false);
 
   useEffect(() => {
-    // Supabase sends browser-only recovery tokens in the URL fragment.
+    // Supabase may return recovery credentials in the URL fragment (implicit flow)
+    // or query string, depending on the project's Auth email/link configuration.
     const fragment = new URLSearchParams(window.location.hash.replace(/^#/, ""));
-    if (fragment.get("type") === "recovery" && fragment.get("access_token")) {
-      setRecoveryToken(fragment.get("access_token") || "");
+    const query = new URLSearchParams(window.location.search);
+    const type = fragment.get("type") || query.get("type");
+    const accessToken = fragment.get("access_token") || query.get("access_token");
+
+    if (type === "recovery" && accessToken) {
+      // A recovery flow must take priority over an already-open admin session.
+      setToken("");
+      setUserId("");
+      setRecoveryToken(accessToken);
       setForgotMode(false);
       setNotice("Tautan pemulihan terverifikasi. Buat password baru untuk akun admin.");
-      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      window.history.replaceState(null, "", window.location.pathname);
+      return;
+    }
+
+    const authError = fragment.get("error_description") || query.get("error_description") ||
+      fragment.get("error") || query.get("error");
+    if (authError) {
+      setNotice("Tautan pemulihan tidak dapat diverifikasi atau sudah kedaluwarsa. Minta tautan reset yang baru.");
+      window.history.replaceState(null, "", window.location.pathname);
     }
   }, []);
 
@@ -470,7 +486,7 @@ export default function AdminPage() {
         <Link href="/" style={{ color: "#5c5de8", fontWeight: 700 }}>← Kembali ke toko</Link>
       </header>
 
-      {!token ? <section style={{ background: "white", padding: 24, borderRadius: 18, border: "1px solid #e8eaf1", maxWidth: 480 }}>
+      {(!token || recoveryToken) ? <section style={{ background: "white", padding: 24, borderRadius: 18, border: "1px solid #e8eaf1", maxWidth: 480 }}>
         {recoveryToken ? <>
           <h2 style={{ marginTop: 0 }}>Buat password baru</h2>
           <p style={{ color: "#687087", lineHeight: 1.6 }}>Masukkan password baru untuk akun admin UPPRIME.</p>
