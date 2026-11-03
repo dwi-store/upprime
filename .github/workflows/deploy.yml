@@ -47,6 +47,15 @@ jobs:
           touch ./out/.nojekyll
           echo "Admin route exists: out/admin/index.html"
           test -f ./out/index.html
+          # Ensure Next.js assets resolve under the GitHub Pages project path.
+          if ! grep -qE '(src|href)="/upprime/_next/' ./out/index.html; then
+            echo "::error::Homepage does not reference Next.js assets under /upprime/_next/."
+            exit 1
+          fi
+          if ! grep -qE '(src|href)="/upprime/_next/' ./out/admin/index.html; then
+            echo "::error::Admin page does not reference Next.js assets under /upprime/_next/."
+            exit 1
+          fi
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload site artifact
