@@ -38,7 +38,9 @@ self.addEventListener("fetch", (event) => {
   }
 
   // Cache only immutable/static same-origin assets. Supabase and other APIs are excluded.
-  if (url.pathname === "/upprime/sw.js") return;\n\n  const isNextAsset = url.pathname.startsWith("/upprime/_next/static/");
+  if (url.pathname === "/upprime/sw.js") return;
+
+  const isNextAsset = url.pathname.startsWith("/upprime/_next/static/");
   const isPublicAsset = /\.(?:css|js|mjs|png|jpg|jpeg|webp|svg|ico|woff2?)$/i.test(url.pathname);
   if (!isNextAsset && !isPublicAsset) return;
 
