@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 256 256" role="img" aria-label="UPPRIME">
+  <defs>
+    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff0bd"/><stop offset=".38" stop-color="#d9a744"/><stop offset=".7" stop-color="#6d4715"/><stop offset="1" stop-color="#f8d887"/>
+    </linearGradient>
+    <linearGradient id="silver" x1=".08" y1="0" x2=".94" y2="1">
+      <stop offset="0" stop-color="#ffffff"/><stop offset=".35" stop-color="#e4e4e4"/><stop offset=".68" stop-color="#a4a4a4"/><stop offset="1" stop-color="#fafafa"/>
+    </linearGradient>
+    <linearGradient id="gold" x1=".1" y1="0" x2=".9" y2="1">
+      <stop offset="0" stop-color="#fff0b2"/><stop offset=".28" stop-color="#edc66c"/><stop offset=".56" stop-color="#a66b1f"/><stop offset=".78" stop-color="#f8d786"/><stop offset="1" stop-color="#bd8729"/>
+    </linearGradient>
+  </defs>
+  <rect x="16" y="14" width="224" height="228" rx="48" fill="#030303" stroke="url(#edge)" stroke-width="1.5"/>
+  <path d="M76 84 L76 137 C76 153 84 166 98 176 C111 185 125 180 138 168 L153 153 L137 138 L122 153 C116 159 110 162 104 158 C98 154 96 148 96 140 L96 73 Z" fill="url(#silver)"/>
+  <path d="M125 151 L146 132 L146 104 L126 104 L168 65 L201 98 L182 95 L182 121 L153 151 C145 159 137 166 128 169 L112 158 Z" fill="url(#gold)"/>
+  <path d="M146 104 L168 65 L201 98 L182 95 L182 121 L154 151" fill="none" stroke="#f7d98b" stroke-opacity=".45" stroke-width="1.5"/>
+</svg>
