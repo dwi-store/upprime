@@ -1,6 +1,13 @@
-const CACHE_NAME = "upprime-static-v1";
+const CACHE_NAME = "upprime-static-v2";
 const APP_SCOPE = "/upprime/";
 const OFFLINE_URL = "/upprime/offline.html";
+const STATIC_PUBLIC_ASSETS = new Set([
+  "/upprime/favicon.svg",
+  "/upprime/favicon-32.png",
+  "/upprime/favicon-180.png",
+  "/upprime/favicon-192.svg",
+  "/upprime/favicon-512.png"
+]);
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -29,7 +36,8 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin) return;
   if (!url.pathname.startsWith(APP_SCOPE)) return;
 
-  // Never cache navigations, admin pages, customer data, auth, or payment flows.
+  // Keep navigations network-only; show a generic offline page only on network failure.
+  // This avoids caching admin, customer, authentication, and payment pages or responses.
   if (request.mode === "navigate") {
     event.respondWith(
       fetch(request).catch(() => caches.match(OFFLINE_URL))
@@ -37,23 +45,23 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Cache only immutable/static same-origin assets. Supabase and other APIs are excluded.
   if (url.pathname === "/upprime/sw.js") return;
 
+  // Cache only immutable Next.js build assets and explicitly approved public icons.
+  // Do not cache arbitrary extension-matching URLs or application/API endpoints.
   const isNextAsset = url.pathname.startsWith("/upprime/_next/static/");
-  const isPublicAsset = /\.(?:css|js|mjs|png|jpg|jpeg|webp|svg|ico|woff2?)$/i.test(url.pathname);
-  if (!isNextAsset && !isPublicAsset) return;
+  const isApprovedPublicAsset = STATIC_PUBLIC_ASSETS.has(url.pathname);
+  if (!isNextAsset && !isApprovedPublicAsset) return;
 
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) return cached;
-      return fetch(request).then((response) => {
-        if (response.ok && response.type === "basic") {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-        }
-        return response;
-      });
-    })
-  );
+  event.respondWith((async () => {
+    const cached = await caches.match(request);
+    if (cached) return cached;
+
+    const response = await fetch(request);
+    if (response.ok && response.type === "basic") {
+      const cache = await caches.open(CACHE_NAME);
+      await cache.put(request, response.clone());
+    }
+    return response;
+  })());
 });
